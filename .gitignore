@@ -1,5 +1,5 @@
 node_modules/
-# dist/ se sube a GitHub Pages
+# docs/ se sube a GitHub Pages
 .env.local
 .env
 *.log
