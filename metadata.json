@@ -1,0 +1,6 @@
+{
+  "name": "Generador de recetas de filtrados",
+  "description": "Calculadora inteligente de recetas para café de especialidad con IA, cronómetro interactivo guiado y bitácora de catas histórica.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,120 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+body {
+  @apply antialiased bg-[#faf8f5] dark:bg-[#121212];
+}
+
+/* Custom compact scrollbar for horizontal pills */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* --- Dynamic Theme System --- */
+:root {
+  --color-accent: #a98467;
+  --color-accent-dark: #d4a373;
+  --color-accent-hover: #7f5539;
+  --color-accent-hover-dark: #c69262;
+  --color-accent-bg-light: rgba(169, 132, 103, 0.1);
+  --color-accent-bg-light-dark: rgba(212, 163, 115, 0.1);
+  --color-accent-bg-soft: #faf6f0;
+  --color-accent-rgb: 169, 132, 103;
+  --color-accent-dark-rgb: 212, 163, 115;
+}
+
+:root[data-theme="azul"] {
+  --color-accent: #0284c7;
+  --color-accent-dark: #38bdf8;
+  --color-accent-hover: #0369a1;
+  --color-accent-hover-dark: #7dd3fc;
+  --color-accent-bg-light: rgba(2, 132, 199, 0.1);
+  --color-accent-bg-light-dark: rgba(56, 189, 248, 0.12);
+  --color-accent-bg-soft: #f0f9ff;
+  --color-accent-rgb: 2, 132, 199;
+  --color-accent-dark-rgb: 56, 189, 248;
+}
+
+:root[data-theme="rosado"] {
+  --color-accent: #db2777;
+  --color-accent-dark: #f472b6;
+  --color-accent-hover: #be185d;
+  --color-accent-hover-dark: #f472b6;
+  --color-accent-bg-light: rgba(219, 39, 119, 0.1);
+  --color-accent-bg-light-dark: rgba(244, 114, 182, 0.12);
+  --color-accent-bg-soft: #fdf2f8;
+  --color-accent-rgb: 219, 39, 119;
+  --color-accent-dark-rgb: 244, 114, 182;
+}
+
+:root[data-theme="oscuro"] {
+  --color-accent: #4b5563; /* zinc-600 */
+  --color-accent-dark: #e4e4e7; /* zinc-200 */
+  --color-accent-hover: #1f2937; /* zinc-800 */
+  --color-accent-hover-dark: #f4f4f5; /* zinc-100 */
+  --color-accent-bg-light: rgba(75, 85, 99, 0.15);
+  --color-accent-bg-light-dark: rgba(228, 228, 231, 0.15);
+  --color-accent-bg-soft: #f3f4f6; /* zinc-100 */
+  --color-accent-rgb: 75, 85, 99;
+  --color-accent-dark-rgb: 228, 228, 231;
+}
+
+/* Overriding Tailwind specific classes with CSS variables! */
+.text-\[\#a98467\] { color: var(--color-accent) !important; }
+.text-\[\#d4a373\] { color: var(--color-accent-dark) !important; }
+.text-\[\#7f5539\] { color: var(--color-accent-hover) !important; }
+.text-\[\#c69262\] { color: var(--color-accent-hover-dark) !important; }
+
+.dark\:text-\[\#d4a373\]:where(.dark, .dark *) { color: var(--color-accent-dark) !important; }
+.dark\:text-\[\#a98467\]:where(.dark, .dark *) { color: var(--color-accent) !important; }
+
+.fill-\[\#d4a373\] { fill: var(--color-accent-dark) !important; }
+.dark\:fill-\[\#d4a373\]:where(.dark, .dark *) { fill: var(--color-accent-dark) !important; }
+
+.bg-\[\#a98467\] { background-color: var(--color-accent) !important; }
+.bg-\[\#d4a373\] { background-color: var(--color-accent-dark) !important; }
+.dark\:bg-\[\#d4a373\]:where(.dark, .dark *) { background-color: var(--color-accent-dark) !important; }
+
+.bg-\[\#a98467\]\/10 { background-color: var(--color-accent-bg-light) !important; }
+.dark\:bg-\[\#d4a373\]\/10:where(.dark, .dark *) { background-color: var(--color-accent-bg-light-dark) !important; }
+.bg-\[\#a98467\]\/15 { background-color: var(--color-accent-bg-light) !important; }
+.dark\:bg-\[\#d4a373\]\/15:where(.dark, .dark *) { background-color: var(--color-accent-bg-light-dark) !important; }
+.bg-\[\#a98467\]\/5 { background-color: rgba(var(--color-accent-rgb), 0.05) !important; }
+.dark\:bg-\[\#d4a373\]\/5:where(.dark, .dark *) { background-color: rgba(var(--color-accent-dark-rgb), 0.05) !important; }
+
+.bg-\[\#faf6f0\] { background-color: var(--color-accent-bg-soft) !important; }
+.bg-\[\#faf6f0\]\/60 { background-color: var(--color-accent-bg-soft) !important; }
+
+.border-\[\#a98467\] { border-color: var(--color-accent) !important; }
+.dark\:border-\[\#d4a373\]:where(.dark, .dark *) { border-color: var(--color-accent-dark) !important; }
+.border-\[\#a98467\]\/20 { border-color: rgba(var(--color-accent-rgb), 0.2) !important; }
+.dark\:border-\[\#d4a373\]\/20:where(.dark, .dark *) { border-color: rgba(var(--color-accent-dark-rgb), 0.2) !important; }
+
+.border-\[\#e6dfd5\] {
+  border-color: #e6dfd5;
+}
+:root[data-theme="azul"] .border-\[\#e6dfd5\] { border-color: rgba(2, 132, 199, 0.15); }
+:root[data-theme="rosado"] .border-\[\#e6dfd5\] { border-color: rgba(219, 39, 119, 0.15); }
+:root[data-theme="oscuro"] .border-\[\#e6dfd5\] { border-color: rgba(75, 85, 99, 0.15); }
+
+.hover\:bg-\[\#7f5539\]:hover { background-color: var(--color-accent-hover) !important; }
+.dark\:hover\:bg-\[\#c69262\]:where(.dark, .dark *):hover { background-color: var(--color-accent-hover-dark) !important; }
+.hover\:border-\[\#a98467\]:hover { border-color: var(--color-accent) !important; }
+.dark\:hover\:border-\[\#d4a373\]:where(.dark, .dark *):hover { border-color: var(--color-accent-dark) !important; }
+
+/* SVG specific strokes */
+.stroke-\[\#a98467\] { stroke: var(--color-accent) !important; }
+.dark\:stroke-\[\#d4a373\]:where(.dark, .dark *) { stroke: var(--color-accent-dark) !important; }
+
