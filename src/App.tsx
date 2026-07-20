@@ -83,6 +83,7 @@ export default function App() {
 
   // Estado de IA activa
   const [activeAIProvider, setActiveAIProvider] = useState<string>("local");
+  const [expandedAIOption, setExpandedAIOption] = useState<string | null>(null);
 
   // Verificar IA activa al montar
   useEffect(() => {
@@ -555,32 +556,21 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Sub-tab 1: API Key - Multi Provider */}
+              {/* Sub-tab 1: API Key - Multi Provider (Expandible) */}
               {settingsTab === "api" && (
-                <div className="space-y-3">
-                  {/* Selector de proveedor de IA */}
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold text-[#8a7e72] dark:text-[#a8a29e] uppercase tracking-wider">
-                      Proveedor de IA
-                    </p>
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-[#8a7e72] dark:text-[#a8a29e] uppercase tracking-wider">
+                    Selecciona proveedor de IA
+                  </p>
 
-                    {/* Opción 1: Groq (gratis) */}
+                  {/* Opción 1: Groq (gratis) - Solo mostrar instrucciones */}
+                  <div className="border border-[#e6dfd5] dark:border-[#2a2a2a] rounded-xl overflow-hidden">
                     <button
-                      onClick={() => {
-                        if (!import.meta.env.VITE_GROQ_API_KEY) {
-                          alert("Para usar Groq:\n\n1. Crea cuenta en console.groq.com\n2. Crea una API Key\n3. Añade VITE_GROQ_API_KEY=tu_clave al archivo .env\n4. Reinicia el servidor con npm run dev");
-                          return;
-                        }
-                        localStorage.removeItem("gato_brew_gemini_api_key");
-                        localStorage.removeItem("gato_brew_openai_api_key");
-                        localStorage.removeItem("gato_brew_claude_api_key");
-                        setActiveAIProvider("groq");
-                        window.location.reload();
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                      onClick={() => setExpandedAIOption(expandedAIOption === "groq" ? null : "groq")}
+                      className={`w-full p-3 text-left transition-all flex items-center justify-between ${
                         activeAIProvider === "groq"
-                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
-                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                          ? "bg-green-500/10"
+                          : "hover:bg-[#faf6f0] dark:hover:bg-[#121212]/30"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -592,27 +582,55 @@ export default function App() {
                               <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Gratis y rápido. Requiere clave en .env</p>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Gratis y rápido</p>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#8a7e72] text-xs">{expandedAIOption === "groq" ? "▲" : "▼"}</span>
                       </div>
                     </button>
 
-                    {/* Opción 2: Google AI Studio */}
+                    {expandedAIOption === "groq" && (
+                      <div className="p-3 border-t border-[#e6dfd5] dark:border-[#2a2a2a] bg-[#faf6f0]/50 dark:bg-[#121212]/30 space-y-3">
+                        <div className="text-[11px] space-y-1.5">
+                          <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">⚡ ¿Cómo activar Groq?</p>
+                          <ol className="list-decimal pl-4 text-[#3e362e] dark:text-[#c7c1bb] space-y-0.5">
+                            <li>Crea cuenta en <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline">console.groq.com</a></li>
+                            <li>Ve a "API Keys" y crea una nueva clave</li>
+                            <li>Añade <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">VITE_GROQ_API_KEY=tu_clave</code> en el archivo <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">.env</code></li>
+                            <li>Reinicia el servidor con <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">npm run dev</code></li>
+                          </ol>
+                        </div>
+                        {import.meta.env.VITE_GROQ_API_KEY ? (
+                          <button
+                            onClick={() => {
+                              localStorage.removeItem("gato_brew_gemini_api_key");
+                              localStorage.removeItem("gato_brew_openai_api_key");
+                              localStorage.removeItem("gato_brew_claude_api_key");
+                              setActiveAIProvider("groq");
+                              window.location.reload();
+                            }}
+                            className="w-full py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition-colors"
+                          >
+                            Activar Groq
+                          </button>
+                        ) : (
+                          <p className="text-[11px] text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 p-2 rounded-lg text-center">
+                            ⚠️ Añade tu API key en el archivo .env
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opción 2: Google AI Studio */}
+                  <div className="border border-[#e6dfd5] dark:border-[#2a2a2a] rounded-xl overflow-hidden">
                     <button
-                      onClick={() => {
-                        const key = prompt("Ingresa tu API Key de Google AI Studio:");
-                        if (key && key.trim()) {
-                          localStorage.setItem("gato_brew_gemini_api_key", key.trim());
-                          localStorage.removeItem("gato_brew_openai_api_key");
-                          localStorage.removeItem("gato_brew_claude_api_key");
-                          setActiveAIProvider("gemini");
-                          window.location.reload();
-                        }
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                      onClick={() => setExpandedAIOption(expandedAIOption === "gemini" ? null : "gemini")}
+                      className={`w-full p-3 text-left transition-all flex items-center justify-between ${
                         activeAIProvider === "gemini"
-                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
-                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                          ? "bg-green-500/10"
+                          : "hover:bg-[#faf6f0] dark:hover:bg-[#121212]/30"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -624,27 +642,61 @@ export default function App() {
                               <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Gratis (15 req/min). Requiere API Key.</p>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Gratis (15 req/min)</p>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#8a7e72] text-xs">{expandedAIOption === "gemini" ? "▲" : "▼"}</span>
                       </div>
                     </button>
 
-                    {/* Opción 3: OpenAI */}
+                    {expandedAIOption === "gemini" && (
+                      <div className="p-3 border-t border-[#e6dfd5] dark:border-[#2a2a2a] bg-[#faf6f0]/50 dark:bg-[#121212]/30 space-y-3">
+                        <div className="text-[11px] space-y-1.5">
+                          <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">🔮 ¿Cómo obtener tu API Key?</p>
+                          <ol className="list-decimal pl-4 text-[#3e362e] dark:text-[#c7c1bb] space-y-0.5">
+                            <li>Entra en <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline">Google AI Studio</a></li>
+                            <li>Haz clic en "Get API Key"</li>
+                            <li>Crea una clave nueva y cópiala</li>
+                          </ol>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            id="gemini-api-key"
+                            type="password"
+                            placeholder="Pega tu API Key aquí..."
+                            defaultValue={localStorage.getItem("gato_brew_gemini_api_key") || ""}
+                            className="flex-1 px-3 py-2 rounded-lg border border-[#e6dfd5] dark:border-[#2a2a2a] bg-white dark:bg-[#121212] text-xs font-mono outline-none focus:border-[#a98467]"
+                          />
+                          <button
+                            onClick={() => {
+                              const input = document.getElementById("gemini-api-key") as HTMLInputElement;
+                              const key = input.value.trim();
+                              if (key) {
+                                localStorage.setItem("gato_brew_gemini_api_key", key);
+                                localStorage.removeItem("gato_brew_openai_api_key");
+                                localStorage.removeItem("gato_brew_claude_api_key");
+                                setActiveAIProvider("gemini");
+                                window.location.reload();
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition-colors whitespace-nowrap"
+                          >
+                            Activar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opción 3: OpenAI */}
+                  <div className="border border-[#e6dfd5] dark:border-[#2a2a2a] rounded-xl overflow-hidden">
                     <button
-                      onClick={() => {
-                        const key = prompt("Ingresa tu API Key de OpenAI:");
-                        if (key && key.trim()) {
-                          localStorage.setItem("gato_brew_openai_api_key", key.trim());
-                          localStorage.removeItem("gato_brew_gemini_api_key");
-                          localStorage.removeItem("gato_brew_claude_api_key");
-                          setActiveAIProvider("openai");
-                          window.location.reload();
-                        }
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                      onClick={() => setExpandedAIOption(expandedAIOption === "openai" ? null : "openai")}
+                      className={`w-full p-3 text-left transition-all flex items-center justify-between ${
                         activeAIProvider === "openai"
-                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
-                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                          ? "bg-green-500/10"
+                          : "hover:bg-[#faf6f0] dark:hover:bg-[#121212]/30"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -656,27 +708,61 @@ export default function App() {
                               <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">GPT-3.5/4. Requiere API Key de pago.</p>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">GPT-3.5/4 (pago por uso)</p>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#8a7e72] text-xs">{expandedAIOption === "openai" ? "▲" : "▼"}</span>
                       </div>
                     </button>
 
-                    {/* Opción 4: Claude */}
+                    {expandedAIOption === "openai" && (
+                      <div className="p-3 border-t border-[#e6dfd5] dark:border-[#2a2a2a] bg-[#faf6f0]/50 dark:bg-[#121212]/30 space-y-3">
+                        <div className="text-[11px] space-y-1.5">
+                          <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">🤖 ¿Cómo obtener tu API Key?</p>
+                          <ol className="list-decimal pl-4 text-[#3e362e] dark:text-[#c7c1bb] space-y-0.5">
+                            <li>Entra en <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline">platform.openai.com</a></li>
+                            <li>Crea una nueva API key</li>
+                            <li>Copia y pega la clave</li>
+                          </ol>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            id="openai-api-key"
+                            type="password"
+                            placeholder="sk-..."
+                            defaultValue={localStorage.getItem("gato_brew_openai_api_key") || ""}
+                            className="flex-1 px-3 py-2 rounded-lg border border-[#e6dfd5] dark:border-[#2a2a2a] bg-white dark:bg-[#121212] text-xs font-mono outline-none focus:border-[#a98467]"
+                          />
+                          <button
+                            onClick={() => {
+                              const input = document.getElementById("openai-api-key") as HTMLInputElement;
+                              const key = input.value.trim();
+                              if (key) {
+                                localStorage.setItem("gato_brew_openai_api_key", key);
+                                localStorage.removeItem("gato_brew_gemini_api_key");
+                                localStorage.removeItem("gato_brew_claude_api_key");
+                                setActiveAIProvider("openai");
+                                window.location.reload();
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition-colors whitespace-nowrap"
+                          >
+                            Activar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opción 4: Claude */}
+                  <div className="border border-[#e6dfd5] dark:border-[#2a2a2a] rounded-xl overflow-hidden">
                     <button
-                      onClick={() => {
-                        const key = prompt("Ingresa tu API Key de Claude:");
-                        if (key && key.trim()) {
-                          localStorage.setItem("gato_brew_claude_api_key", key.trim());
-                          localStorage.removeItem("gato_brew_gemini_api_key");
-                          localStorage.removeItem("gato_brew_openai_api_key");
-                          setActiveAIProvider("claude");
-                          window.location.reload();
-                        }
-                      }}
-                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                      onClick={() => setExpandedAIOption(expandedAIOption === "claude" ? null : "claude")}
+                      className={`w-full p-3 text-left transition-all flex items-center justify-between ${
                         activeAIProvider === "claude"
-                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
-                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                          ? "bg-green-500/10"
+                          : "hover:bg-[#faf6f0] dark:hover:bg-[#121212]/30"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -688,24 +774,68 @@ export default function App() {
                               <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Requiere API Key de pago.</p>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Requiere API Key de pago</p>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#8a7e72] text-xs">{expandedAIOption === "claude" ? "▲" : "▼"}</span>
                       </div>
                     </button>
 
-                    {/* Opción 5: Modo Local */}
+                    {expandedAIOption === "claude" && (
+                      <div className="p-3 border-t border-[#e6dfd5] dark:border-[#2a2a2a] bg-[#faf6f0]/50 dark:bg-[#121212]/30 space-y-3">
+                        <div className="text-[11px] space-y-1.5">
+                          <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">🧠 ¿Cómo obtener tu API Key?</p>
+                          <ol className="list-decimal pl-4 text-[#3e362e] dark:text-[#c7c1bb] space-y-0.5">
+                            <li>Entra en <a href="https://console.anthropic.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline">console.anthropic.com</a></li>
+                            <li>Crea una nueva API key</li>
+                            <li>Copia y pega la clave</li>
+                          </ol>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            id="claude-api-key"
+                            type="password"
+                            placeholder="sk-ant-..."
+                            defaultValue={localStorage.getItem("gato_brew_claude_api_key") || ""}
+                            className="flex-1 px-3 py-2 rounded-lg border border-[#e6dfd5] dark:border-[#2a2a2a] bg-white dark:bg-[#121212] text-xs font-mono outline-none focus:border-[#a98467]"
+                          />
+                          <button
+                            onClick={() => {
+                              const input = document.getElementById("claude-api-key") as HTMLInputElement;
+                              const key = input.value.trim();
+                              if (key) {
+                                localStorage.setItem("gato_brew_claude_api_key", key);
+                                localStorage.removeItem("gato_brew_gemini_api_key");
+                                localStorage.removeItem("gato_brew_openai_api_key");
+                                setActiveAIProvider("claude");
+                                window.location.reload();
+                              }
+                            }}
+                            className="px-4 py-2 bg-green-500 text-white text-xs font-bold rounded-lg hover:bg-green-600 transition-colors whitespace-nowrap"
+                          >
+                            Activar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opción 5: Modo Local */}
+                  <div className="border border-[#e6dfd5] dark:border-[#2a2a2a] rounded-xl overflow-hidden">
                     <button
                       onClick={() => {
                         localStorage.removeItem("gato_brew_gemini_api_key");
                         localStorage.removeItem("gato_brew_openai_api_key");
                         localStorage.removeItem("gato_brew_claude_api_key");
                         setActiveAIProvider("local");
+                        setExpandedAIOption(null);
                         window.location.reload();
                       }}
-                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                      className={`w-full p-3 text-left transition-all flex items-center justify-between ${
                         activeAIProvider === "local"
-                          ? "border-yellow-500 bg-yellow-500/10 ring-1 ring-yellow-500/30"
-                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-yellow-500/50"
+                          ? "bg-yellow-500/10 border-yellow-500/30"
+                          : "hover:bg-[#faf6f0] dark:hover:bg-[#121212]/30"
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -717,21 +847,10 @@ export default function App() {
                               <span className="text-[10px] bg-yellow-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Sin IA. Usa base de datos + variación.</p>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Sin IA, usa base de datos</p>
                         </div>
                       </div>
                     </button>
-                  </div>
-
-                  {/* Instrucciones para Groq */}
-                  <div className="p-3 rounded-xl bg-[#faf6f0] dark:bg-[#121212] border border-[#e6dfd5] dark:border-[#2a2a2a]/60 text-[11px] leading-relaxed space-y-1.5">
-                    <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">⚡ ¿Cómo activar Groq (gratis)?</p>
-                    <ol className="list-decimal pl-4 space-y-0.5 text-[#3e362e] dark:text-[#c7c1bb] text-[11px]">
-                      <li>Crea cuenta en <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline font-medium">console.groq.com</a></li>
-                      <li>Ve a "API Keys" y crea una nueva clave</li>
-                      <li>Añade <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">VITE_GROQ_API_KEY=tu_clave</code> en el archivo <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">.env</code></li>
-                      <li>Reinicia el servidor con <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">npm run dev</code></li>
-                    </ol>
                   </div>
                 </div>
               )}
