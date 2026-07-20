@@ -408,7 +408,7 @@ export default function App() {
         <header className="sticky top-0 z-30 w-full max-w-md mx-auto px-4 py-3 bg-[#faf8f5]/95 dark:bg-[#121212]/95 backdrop-blur-md border-b border-[#e6dfd5] dark:border-[#2a2a2a] relative">
           <div className="flex items-center gap-4 w-full pr-16">
             {/* Beautiful Gato Brew Sticker Logo - Expanded and optimized for details and full cat's head */}
-            <div className="relative h-24 w-24 flex items-center justify-center bg-white rounded-2xl border-2 border-[#e6dfd5] dark:border-white shadow-md overflow-hidden p-1 shrink-0">
+            <div className="relative h-32 w-32 flex items-center justify-center bg-white rounded-2xl border-2 border-[#e6dfd5] dark:border-white shadow-md overflow-hidden p-1 shrink-0">
               <img 
                 src={logoUrl} 
                 alt="Gato Brew Sticker Logo" 

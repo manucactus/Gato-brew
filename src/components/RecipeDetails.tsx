@@ -114,11 +114,23 @@ export default function RecipeDetails({
   const [personalNotes, setPersonalNotes] = useState(recipe.notasPersonales || "");
   const [isCopied, setIsCopied] = useState(false);
   const [showVarietyLibrary, setShowVarietyLibrary] = useState(false);
+  const [notesPlaceholder, setNotesPlaceholder] = useState("Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez...");
 
   // Sync state if recipe changes
   useEffect(() => {
     setPersonalNotes(recipe.notasPersonales || "");
+    setNotesPlaceholder("Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez...");
   }, [recipe]);
+
+  const handleNotesFocus = () => {
+    setNotesPlaceholder("");
+  };
+
+  const handleNotesBlur = () => {
+    if (!personalNotes.trim()) {
+      setNotesPlaceholder("Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez...");
+    }
+  };
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
@@ -429,7 +441,9 @@ ${recipe.notasBarista}
           id="textarea-personal-notes"
           value={personalNotes}
           onChange={handleNotesChange}
-          placeholder="Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez..."
+          onFocus={handleNotesFocus}
+          onBlur={handleNotesBlur}
+          placeholder={notesPlaceholder}
           rows={3}
           className={`w-full px-3.5 py-2.5 rounded-xl border text-xs outline-none transition-all duration-150 leading-relaxed resize-none ${
             isDarkMode
