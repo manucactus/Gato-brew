@@ -10,38 +10,46 @@ interface InteractiveTimerProps {
 }
 
 export default function InteractiveTimer({ recipe, onBrewCompleted, onCancel, isDarkMode }: InteractiveTimerProps) {
+  // Generar pasos dinámicamente si no existen
+  const getDefaultSteps = () => {
+    const agua = recipe.aguaGramos;
+    const cafe = recipe.cafeGramos;
+    const ratio = agua / cafe;
+
+    if (ratio >= 15 && ratio <= 17) {
+      // Receta clásica 1:15-1:17
+      const bloom = Math.round(agua * 0.3);
+      const segunda = Math.round(agua * 0.4);
+      const tercera = agua - bloom - segunda;
+      return [
+        { tiempoInicio: 0, tiempoFin: 45, nombre: "Bloom", descripcion: `Vierte ${bloom}g de agua. Permite que el café libere CO2.`, aguaAcumulada: bloom },
+        { tiempoInicio: 45, tiempoFin: 90, nombre: "Primera vertida", descripcion: `Vierte hasta ${bloom + segunda}g en círculos.`, aguaAcumulada: bloom + segunda },
+        { tiempoInicio: 90, tiempoFin: 150, nombre: "Vertida final", descripcion: `Completa los ${agua}g totales. Deja drenar.`, aguaAcumulada: agua }
+      ];
+    } else if (ratio > 17) {
+      // Receta más diluida
+      const bloom = Math.round(agua * 0.25);
+      const segunda = Math.round(agua * 0.35);
+      const tercera = agua - bloom - segunda;
+      return [
+        { tiempoInicio: 0, tiempoFin: 45, nombre: "Bloom", descripcion: `Vierte ${bloom}g de agua.`, aguaAcumulada: bloom },
+        { tiempoInicio: 45, tiempoFin: 90, nombre: "Primera vertida", descripcion: `Vierte hasta ${bloom + segunda}g.`, aguaAcumulada: bloom + segunda },
+        { tiempoInicio: 90, tiempoFin: 180, nombre: "Vertida final", descripcion: `Completa los ${agua}g totales.`, aguaAcumulada: agua }
+      ];
+    } else {
+      // Receta concentrada
+      const bloom = Math.round(agua * 0.35);
+      const segunda = agua - bloom;
+      return [
+        { tiempoInicio: 0, tiempoFin: 45, nombre: "Bloom", descripcion: `Vierte ${bloom}g de agua.`, aguaAcumulada: bloom },
+        { tiempoInicio: 45, tiempoFin: 120, nombre: "Vertida única", descripcion: `Completa los ${agua}g totales.`, aguaAcumulada: agua }
+      ];
+    }
+  };
+
   const steps = recipe.pasosCronometro && recipe.pasosCronometro.length > 0
     ? recipe.pasosCronometro
-    : [
-        {
-          tiempoInicio: 0,
-          tiempoFin: 30,
-          nombre: "Pre-infusión (Blooming)",
-          descripcion: "Vierte 40g de agua lentamente humedeciendo todo el café y espera.",
-          aguaAcumulada: 40
-        },
-        {
-          tiempoInicio: 30,
-          tiempoFin: 90,
-          nombre: "Primer Vertido",
-          descripcion: "Vierte agua en círculos concéntricos desde el centro hacia afuera hasta llegar a 130g.",
-          aguaAcumulada: 130
-        },
-        {
-          tiempoInicio: 90,
-          tiempoFin: 150,
-          nombre: "Segundo Vertido",
-          descripcion: "Vierte suavemente en el centro del filtrado hasta completar los " + recipe.aguaGramos + "g totales.",
-          aguaAcumulada: recipe.aguaGramos
-        },
-        {
-          tiempoInicio: 150,
-          tiempoFin: 180,
-          nombre: "Filtrado Final",
-          descripcion: "Deja que el agua percole por completo. Da un suave giro al filtro para asentar la cama de café.",
-          aguaAcumulada: recipe.aguaGramos
-        }
-      ];
+    : getDefaultSteps();
 
   const totalDuration = steps[steps.length - 1].tiempoFin;
 

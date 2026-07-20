@@ -111,32 +111,9 @@ export default function RecipeDetails({
   onSaveToHistory,
   isSavedInHistory = false
 }: RecipeDetailsProps) {
-  const [personalNotes, setPersonalNotes] = useState(recipe.notasPersonales || "");
+  // Estado para notas (ya no editable, solo para mostrar)
   const [isCopied, setIsCopied] = useState(false);
   const [showVarietyLibrary, setShowVarietyLibrary] = useState(false);
-  const [notesPlaceholder, setNotesPlaceholder] = useState("Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez...");
-
-  // Sync state if recipe changes
-  useEffect(() => {
-    setPersonalNotes(recipe.notasPersonales || "");
-    setNotesPlaceholder("Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez...");
-  }, [recipe]);
-
-  const handleNotesFocus = () => {
-    setNotesPlaceholder("");
-  };
-
-  const handleNotesBlur = () => {
-    if (!personalNotes.trim()) {
-      setNotesPlaceholder("Escribe ajustes de temperatura, molienda o detalles específicos que quieras recordar para la próxima vez...");
-    }
-  };
-
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value;
-    setPersonalNotes(val);
-    onSaveNotes(val);
-  };
 
   const copyToClipboard = () => {
     const text = `
@@ -431,29 +408,20 @@ ${recipe.notasBarista}
         <span className="text-[#3e362e] dark:text-[#a8a29e] italic leading-relaxed">{recipe.notasBarista}</span>
       </div>
 
-      {/* Notas Personales */}
+      {/* Notas Personales (solo lectura) */}
       <div className="space-y-2 border-t dark:border-[#2a2a2a] border-[#e6dfd5] pt-3.5">
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#8a7e72] dark:text-[#a8a29e] flex items-center gap-1.5">
           <PenTool className="w-3.5 h-3.5" />
-          Tus Notas Personales
+          Notas de Receta
         </h3>
-        <textarea
-          id="textarea-personal-notes"
-          value={personalNotes}
-          onChange={handleNotesChange}
-          onFocus={handleNotesFocus}
-          onBlur={handleNotesBlur}
-          placeholder={notesPlaceholder}
-          rows={3}
-          className={`w-full px-3.5 py-2.5 rounded-xl border text-xs outline-none transition-all duration-150 leading-relaxed resize-none ${
+        <div
+          className={`w-full px-3.5 py-2.5 rounded-xl border text-xs outline-none transition-all duration-150 leading-relaxed ${
             isDarkMode
-              ? "bg-[#1c1c1c] border-[#2a2a2a] text-[#e6e2df] placeholder-[#a8a29e]/40 focus:border-[#d4a373]"
-              : "bg-white border-[#e6dfd5] text-[#3e362e] placeholder-[#8a7e72]/40 focus:border-[#a98467] focus:ring-1 focus:ring-[#e6dfd5]"
+              ? "bg-[#1c1c1c] border-[#2a2a2a] text-[#a8a29e] dark:text-[#c7c1bb]"
+              : "bg-[#faf6f0] border-[#e6dfd5] text-[#8a7e72]"
           }`}
-        />
-        <div className="text-[10px] text-[#8a7e72] dark:text-[#a8a29e] flex justify-between">
-          <span>Tus notas se auto-guardan localmente.</span>
-          <span>{personalNotes.length} caracteres</span>
+        >
+          {recipe.notasPersonales || "Sin notas."}
         </div>
       </div>
     </div>
