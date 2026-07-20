@@ -245,7 +245,7 @@ ${recipe.notasBarista}
             </tr>
             <tr>
               <td className="px-3.5 py-2.5 font-medium text-[#8a7e72] dark:text-[#a8a29e]">Temperatura</td>
-              <td className="px-3.5 py-2.5 font-semibold text-[#3e362e] dark:text-[#e6e2df]">{recipe.temperatura}</td>
+              <td className="px-3.5 py-2.5 font-semibold text-[#3e362e] dark:text-[#e6e2df]">{Math.round(recipe.temperaturaNum)}°C</td>
             </tr>
             <tr>
               <td className="px-3.5 py-2.5 font-medium text-[#8a7e72] dark:text-[#a8a29e]">Molienda</td>

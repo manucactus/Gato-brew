@@ -81,6 +81,29 @@ export default function App() {
     return localStorage.getItem("gato_brew_theme_color") || "estandar";
   });
 
+  // Estado de IA activa
+  const [activeAIProvider, setActiveAIProvider] = useState<string>("local");
+
+  // Verificar IA activa al montar
+  useEffect(() => {
+    const groqKey = import.meta.env.VITE_GROQ_API_KEY;
+    const geminiKey = localStorage.getItem("gato_brew_gemini_api_key");
+    const openaiKey = localStorage.getItem("gato_brew_openai_api_key");
+    const claudeKey = localStorage.getItem("gato_brew_claude_api_key");
+
+    if (groqKey) {
+      setActiveAIProvider("groq");
+    } else if (geminiKey) {
+      setActiveAIProvider("gemini");
+    } else if (openaiKey) {
+      setActiveAIProvider("openai");
+    } else if (claudeKey) {
+      setActiveAIProvider("claude");
+    } else {
+      setActiveAIProvider("local");
+    }
+  }, []);
+
   const handleSaveApiKey = (key: string) => {
     setCustomApiKey(key);
     localStorage.setItem("gato_brew_custom_api_key", key);
@@ -532,61 +555,183 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Sub-tab 1: API Key */}
+              {/* Sub-tab 1: API Key - Multi Provider */}
               {settingsTab === "api" && (
                 <div className="space-y-3">
-                  <div className="text-xs space-y-2 text-[#8a7e72] dark:text-[#a8a29e]">
-                    <p className="leading-relaxed text-[11px]">
-                      Para evitar límites de cuota generales y que la IA procese con total detalle tus recetas a medida, puedes usar tu propia API Key de Gemini:
+                  {/* Selector de proveedor de IA */}
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-[#8a7e72] dark:text-[#a8a29e] uppercase tracking-wider">
+                      Proveedor de IA
                     </p>
-                    
-                    {/* Instructions */}
-                    <div className="p-3 rounded-xl bg-[#faf6f0] dark:bg-[#121212] border border-[#e6dfd5] dark:border-[#2a2a2a]/60 text-[11px] leading-relaxed space-y-1.5">
-                      <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">¿Cómo conseguirla gratis?</p>
-                      <ol className="list-decimal pl-4 space-y-0.5 text-[#3e362e] dark:text-[#c7c1bb] text-[11px]">
-                        <li>Entra en <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline font-medium">Google AI Studio</a>.</li>
-                        <li>Haz clic en <b>"Get API Key"</b>.</li>
-                        <li>Crea una clave de API nueva y cópiala.</li>
-                        <li>Pégala aquí abajo para guardarla de forma segura.</li>
-                      </ol>
-                    </div>
+
+                    {/* Opción 1: Groq (gratis) */}
+                    <button
+                      onClick={() => {
+                        if (!import.meta.env.VITE_GROQ_API_KEY) {
+                          alert("Para usar Groq:\n\n1. Crea cuenta en console.groq.com\n2. Crea una API Key\n3. Añade VITE_GROQ_API_KEY=tu_clave al archivo .env\n4. Reinicia el servidor con npm run dev");
+                          return;
+                        }
+                        localStorage.removeItem("gato_brew_gemini_api_key");
+                        localStorage.removeItem("gato_brew_openai_api_key");
+                        localStorage.removeItem("gato_brew_claude_api_key");
+                        setActiveAIProvider("groq");
+                        window.location.reload();
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                        activeAIProvider === "groq"
+                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
+                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">⚡</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-[#3e362e] dark:text-[#e6e2df]">Groq (Recomendado)</p>
+                            {activeAIProvider === "groq" && (
+                              <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Gratis y rápido. Requiere clave en .env</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Opción 2: Google AI Studio */}
+                    <button
+                      onClick={() => {
+                        const key = prompt("Ingresa tu API Key de Google AI Studio:");
+                        if (key && key.trim()) {
+                          localStorage.setItem("gato_brew_gemini_api_key", key.trim());
+                          localStorage.removeItem("gato_brew_openai_api_key");
+                          localStorage.removeItem("gato_brew_claude_api_key");
+                          setActiveAIProvider("gemini");
+                          window.location.reload();
+                        }
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                        activeAIProvider === "gemini"
+                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
+                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🔮</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-[#3e362e] dark:text-[#e6e2df]">Google AI Studio</p>
+                            {activeAIProvider === "gemini" && (
+                              <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Gratis (15 req/min). Requiere API Key.</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Opción 3: OpenAI */}
+                    <button
+                      onClick={() => {
+                        const key = prompt("Ingresa tu API Key de OpenAI:");
+                        if (key && key.trim()) {
+                          localStorage.setItem("gato_brew_openai_api_key", key.trim());
+                          localStorage.removeItem("gato_brew_gemini_api_key");
+                          localStorage.removeItem("gato_brew_claude_api_key");
+                          setActiveAIProvider("openai");
+                          window.location.reload();
+                        }
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                        activeAIProvider === "openai"
+                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
+                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🤖</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-[#3e362e] dark:text-[#e6e2df]">OpenAI</p>
+                            {activeAIProvider === "openai" && (
+                              <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">GPT-3.5/4. Requiere API Key de pago.</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Opción 4: Claude */}
+                    <button
+                      onClick={() => {
+                        const key = prompt("Ingresa tu API Key de Claude:");
+                        if (key && key.trim()) {
+                          localStorage.setItem("gato_brew_claude_api_key", key.trim());
+                          localStorage.removeItem("gato_brew_gemini_api_key");
+                          localStorage.removeItem("gato_brew_openai_api_key");
+                          setActiveAIProvider("claude");
+                          window.location.reload();
+                        }
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                        activeAIProvider === "claude"
+                          ? "border-green-500 bg-green-500/10 ring-1 ring-green-500/30"
+                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-green-500/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🧠</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-[#3e362e] dark:text-[#e6e2df]">Claude (Anthropic)</p>
+                            {activeAIProvider === "claude" && (
+                              <span className="text-[10px] bg-green-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Requiere API Key de pago.</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Opción 5: Modo Local */}
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("gato_brew_gemini_api_key");
+                        localStorage.removeItem("gato_brew_openai_api_key");
+                        localStorage.removeItem("gato_brew_claude_api_key");
+                        setActiveAIProvider("local");
+                        window.location.reload();
+                      }}
+                      className={`w-full p-3 rounded-xl border text-left text-xs transition-all ${
+                        activeAIProvider === "local"
+                          ? "border-yellow-500 bg-yellow-500/10 ring-1 ring-yellow-500/30"
+                          : "border-[#e6dfd5] dark:border-[#2a2a2a] hover:border-yellow-500/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">📦</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-[#3e362e] dark:text-[#e6e2df]">Modo Local</p>
+                            {activeAIProvider === "local" && (
+                              <span className="text-[10px] bg-yellow-500 text-white px-1.5 py-0.5 rounded font-bold">ACTIVO</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[#8a7e72] dark:text-[#a8a29e]">Sin IA. Usa base de datos + variación.</p>
+                        </div>
+                      </div>
+                    </button>
                   </div>
 
-                  {/* Input field */}
-                  <div className="space-y-1.5 pt-1">
-                    <label className="block text-[10px] font-bold text-[#8a7e72] dark:text-[#a8a29e] uppercase tracking-wider">
-                      Tu API Key de Gemini
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        placeholder="Escribe o pega tu clave de API (AIzaSy...)"
-                        value={customApiKey}
-                        onChange={(e) => handleSaveApiKey(e.target.value)}
-                        className={`w-full pl-3.5 pr-10 py-2.5 rounded-xl border font-mono text-xs outline-none transition-all duration-200 ${
-                          isDarkMode
-                            ? "bg-[#121212] border-[#2a2a2a] text-[#e6e2df] placeholder-[#a8a29e]/30 focus:border-[#d4a373]"
-                            : "bg-white border-[#e6dfd5] text-[#3e362e] placeholder-[#8a7e72]/30 focus:border-[#a98467]"
-                        }`}
-                      />
-                      {customApiKey.trim() ? (
-                        <Check className="w-4 h-4 text-emerald-500 absolute right-3.5 top-1/2 -translate-y-1/2" />
-                      ) : (
-                        <Key className="w-3.5 h-3.5 text-[#8a7e72]/40 absolute right-3.5 top-1/2 -translate-y-1/2" />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Status Indicator */}
-                  <div className="flex items-center gap-2 pt-1 border-t dark:border-[#2a2a2a]/60 border-[#e6dfd5]/60">
-                    <span className={`w-2.5 h-2.5 rounded-full ${customApiKey.trim() ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-                    <span className="text-[10px] font-semibold">
-                      {customApiKey.trim() ? (
-                        <span className="text-emerald-600 dark:text-emerald-400">API Key propia activa (Sin límites de cuota)</span>
-                      ) : (
-                        <span className="text-amber-600 dark:text-amber-500">API general por defecto activa (Cuota compartida)</span>
-                      )}
-                    </span>
+                  {/* Instrucciones para Groq */}
+                  <div className="p-3 rounded-xl bg-[#faf6f0] dark:bg-[#121212] border border-[#e6dfd5] dark:border-[#2a2a2a]/60 text-[11px] leading-relaxed space-y-1.5">
+                    <p className="font-bold text-[#7f5539] dark:text-[#d4a373]">⚡ ¿Cómo activar Groq (gratis)?</p>
+                    <ol className="list-decimal pl-4 space-y-0.5 text-[#3e362e] dark:text-[#c7c1bb] text-[11px]">
+                      <li>Crea cuenta en <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#a98467] dark:text-[#d4a373] underline font-medium">console.groq.com</a></li>
+                      <li>Ve a "API Keys" y crea una nueva clave</li>
+                      <li>Añade <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">VITE_GROQ_API_KEY=tu_clave</code> en el archivo <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">.env</code></li>
+                      <li>Reinicia el servidor con <code className="bg-[#e6dfd5] dark:bg-[#2a2a2a] px-1 rounded font-mono text-[10px]">npm run dev</code></li>
+                    </ol>
                   </div>
                 </div>
               )}
@@ -717,6 +862,21 @@ export default function App() {
                     <p className="text-xs text-[#8a7e72] dark:text-[#a8a29e] leading-relaxed mt-0.5">
                       Completa los parámetros de tu grano. Buscaremos notas de cata y configuraciones de molienda en internet para diseñarte una receta experta de filtrados.
                     </p>
+
+                    {/* Alerta de estado de IA */}
+                    {activeAIProvider !== "local" ? (
+                      <div className="mt-2 p-2.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-600 dark:text-green-400 text-[11px] flex items-center gap-2">
+                        <span className="text-green-500">✨</span>
+                        <span className="font-bold">IA Activa:</span>
+                        <span className="font-mono bg-green-500/20 px-1.5 py-0.5 rounded">{activeAIProvider.toUpperCase()}</span>
+                      </div>
+                    ) : (
+                      <div className="mt-2 p-2.5 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400 text-[11px] flex items-center gap-2">
+                        <span className="text-yellow-500">⚠️</span>
+                        <span className="font-bold">Modo Local:</span>
+                        <span>Sin IA configurada</span>
+                      </div>
+                    )}
                   </div>
 
                   <NewRecipeForm
