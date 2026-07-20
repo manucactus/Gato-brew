@@ -181,8 +181,8 @@ function generarPerfilSabor(
   return notasSeleccionadas.join(", ");
 }
 
-// Generador principal de recetas
-export function generateRecetaConIA(
+// Generador principal de recetas basado en base de datos
+export function generateRecetaConBaseDeDatos(
   origen: string,
   proceso: string,
   metodo: string,
@@ -542,16 +542,6 @@ function formatTiempo(segundos: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')} min`;
 }
 
-// Mantener la función original para compatibilidad
-export function generateLocalFallbackRecipe(
-  origen: string, 
-  proceso: string, 
-  metodo: string, 
-  molino: string, 
-  observaciones?: string,
-  observacionesProceso?: string,
-  feedback?: string,
-  variedad?: string
-): Omit<RecetaCafe, "id" | "fecha" | "notasPersonales"> & { isFallback: boolean } {
-  return generateRecetaConIA(origen, proceso, metodo, molino, observaciones, observacionesProceso, feedback, variedad);
-}
+// Mantener compatibilidad con nombres anteriores
+export const generateRecetaConIA = generateRecetaConBaseDeDatos;
+export const generateLocalFallbackRecipe = generateRecetaConBaseDeDatos;

@@ -7,6 +7,21 @@ import HistoryAndNotes from "./components/HistoryAndNotes";
 import { RecetaCafe, RegistroCata } from "./types";
 import logoUrl from "./assets/images/gato_brew_sticker_logo_1784336418292.jpg";
 import { generateLocalFallbackRecipe } from "./utils/localRecipeGenerator";
+import { generateRecipeWithAI } from "./utils/aiProviders";
+import { buscarRecetasSimilares } from "./utils/campeonesDatabase";
+
+// Helper para formatear tiempo
+function formatTiempo(segundos: number): string {
+  if (segundos < 60) {
+    return `${segundos} seg`;
+  }
+  const mins = Math.floor(segundos / 60);
+  const secs = segundos % 60;
+  if (secs === 0) {
+    return `${mins}:00 min`;
+  }
+  return `${mins}:${secs.toString().padStart(2, '0')} min`;
+}
 
 const SEED_HISTORY: RegistroCata[] = [
   {
@@ -142,55 +157,64 @@ export default function App() {
     return () => clearInterval(interval);
   }, [isGenerating]);
 
-  // Request Recipe from Backend
+  // Request Recipe with AI enhancement
   const handleGenerateRecipe = async (params: { origen: string; variedad?: string; proceso: string; metodo: string; molino: string; observaciones?: string }) => {
     setIsGenerating(true);
     setError(null);
     setActiveRecipe(null);
 
     try {
-      let data;
-      try {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (customApiKey.trim()) {
-          headers["x-gemini-api-key"] = customApiKey.trim();
-        }
+      // Buscar receta base en la base de datos de campeones
+      const recetasBase = buscarRecetasSimilares(params.origen, params.proceso, params.metodo, params.variedad);
+      const recetaBase = recetasBase.length > 0 ? recetasBase[0] : null;
 
-        const response = await fetch("/api/generate-recipe", {
-          method: "POST",
-          headers,
-          body: JSON.stringify(params),
-        });
+      // Llamar al servicio de IA (Groq -> API usuario -> fallback local)
+      const resultado = await generateRecipeWithAI({
+        origen: params.origen,
+        proceso: params.proceso,
+        metodo: params.metodo,
+        molino: params.molino,
+        variedad: params.variedad,
+        observaciones: params.observaciones
+      }, recetaBase);
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Ocurrió un error al calcular tu receta ideal.");
-        }
+      const { receta: data, provider, isFallback } = resultado;
 
-        data = await response.json();
-      } catch (fetchErr: any) {
-        console.warn("Backend API not reachable. Generating recipe client-side:", fetchErr);
-        data = generateLocalFallbackRecipe(
-          params.origen,
-          params.proceso,
-          params.metodo,
-          params.molino,
-          params.observaciones,
-          undefined,
-          undefined,
-          params.variedad
-        );
-      }
-      
       const newRecipe: RecetaCafe = {
-        ...data,
         id: `recipe-${Date.now()}`,
         origen: params.origen,
-        variedad: params.variedad || data.variedad,
+        variedad: params.variedad || data.variedad || "",
         proceso: params.proceso,
+        metodo: params.metodo,
         molino: params.molino,
+        temperatura: `${data.temperatura}°C`,
+        temperaturaNum: data.temperatura,
+        molienda: `${data.molienda.tipo} (${data.molienda.granulometria}) - ${data.molienda.clics}`,
+        moliendaDetalle: {
+          tipo: data.molienda.tipo as any,
+          granulometria: data.molienda.granulometria,
+          clicsComandante: data.molienda.clics,
+          descripcion: ""
+        },
+        ratio: `1:${data.ratio}`,
+        ratioNum: data.ratio,
+        cafeGramos: data.cafeGramos,
+        aguaGramos: data.aguaGramos,
+        tiempoExtraccion: formatTiempo(data.tiempoExtraccion),
+        tiempoExtraccionSegundos: data.tiempoExtraccion,
+        saborPerfil: data.saborPerfil,
+        instrucciones: data.instrucciones,
+        notasBarista: data.notaBarista,
         fecha: new Date().toLocaleDateString("es-ES"),
-        notasPersonales: data.isFallback ? "Receta calculada localmente (ideal para despliegues estáticos)." : ""
+        notasPersonales: isFallback
+          ? "Receta calculada localmente (sin IA)."
+          : `Receta generada con IA (${provider.toUpperCase()}).`,
+        isFallback,
+        isIA: !isFallback,
+        recetaBaseOrigen: recetaBase ? `${recetaBase.competencia} ${recetaBase.year}` : "Base de datos Gato Brew",
+        recetaBaseBarista: recetaBase?.barista,
+        variacionAplicada: true,
+        pasosCronometro: []
       };
 
       setActiveRecipe(newRecipe);
@@ -202,64 +226,71 @@ export default function App() {
     }
   };
 
-  // Calibrate and optimize a past recipe from history
+  // Calibrate and optimize a past recipe with AI
   const handleOptimizeRecipe = async (originalEntry: RegistroCata, feedback: string) => {
     setIsGenerating(true);
     setError(null);
     setActiveRecipe(null);
-    setActiveTab("preparar"); // Switch to preparing tab to show loading state!
+    setActiveTab("preparar");
 
     try {
-      let data;
-      try {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (customApiKey.trim()) {
-          headers["x-gemini-api-key"] = customApiKey.trim();
-        }
+      // Buscar receta base
+      const recetasBase = buscarRecetasSimilares(
+        originalEntry.origenCafe,
+        originalEntry.procesoCafe || "Lavado",
+        originalEntry.metodoCafe,
+        originalEntry.variedadCafe
+      );
+      const recetaBase = recetasBase.length > 0 ? recetasBase[0] : null;
 
-        const response = await fetch("/api/generate-recipe", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            origen: originalEntry.origenCafe,
-            proceso: originalEntry.procesoCafe || "Lavado",
-            metodo: originalEntry.metodoCafe,
-            molino: originalEntry.moliendaCafe,
-            feedback: feedback
-          }),
-        });
+      // Llamar al servicio de IA
+      const resultado = await generateRecipeWithAI({
+        origen: originalEntry.origenCafe,
+        proceso: originalEntry.procesoCafe || "Lavado",
+        metodo: originalEntry.metodoCafe,
+        molino: originalEntry.moliendaCafe,
+        variedad: originalEntry.variedadCafe,
+        feedback: feedback
+      }, recetaBase);
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "Ocurrió un error al calibrar tu receta.");
-        }
+      const { receta: data, provider, isFallback } = resultado;
 
-        data = await response.json();
-      } catch (fetchErr: any) {
-        console.warn("Backend API not reachable. Calibrating recipe client-side:", fetchErr);
-        data = generateLocalFallbackRecipe(
-          originalEntry.origenCafe,
-          originalEntry.procesoCafe || "Lavado",
-          originalEntry.metodoCafe,
-          originalEntry.moliendaCafe,
-          undefined,
-          undefined,
-          feedback,
-          originalEntry.variedadCafe
-        );
-      }
-      
       const newRecipe: RecetaCafe = {
-        ...data,
         id: `recipe-${Date.now()}`,
         originalCataId: originalEntry.id,
         origen: originalEntry.origenCafe,
+        variedad: originalEntry.variedadCafe || data.variedad || "",
         proceso: originalEntry.procesoCafe || "Lavado",
+        metodo: originalEntry.metodoCafe,
         molino: originalEntry.moliendaCafe,
+        temperatura: `${data.temperatura}°C`,
+        temperaturaNum: data.temperatura,
+        molienda: `${data.molienda.tipo} (${data.molienda.granulometria}) - ${data.molienda.clics}`,
+        moliendaDetalle: {
+          tipo: data.molienda.tipo as any,
+          granulometria: data.molienda.granulometria,
+          clicsComandante: data.molienda.clics,
+          descripcion: ""
+        },
+        ratio: `1:${data.ratio}`,
+        ratioNum: data.ratio,
+        cafeGramos: data.cafeGramos,
+        aguaGramos: data.aguaGramos,
+        tiempoExtraccion: formatTiempo(data.tiempoExtraccion),
+        tiempoExtraccionSegundos: data.tiempoExtraccion,
+        saborPerfil: data.saborPerfil,
+        instrucciones: data.instrucciones,
+        notasBarista: data.notaBarista,
         fecha: new Date().toLocaleDateString("es-ES"),
-        notasPersonales: data.isFallback 
+        notasPersonales: isFallback
           ? `Receta calibrada localmente. Ajuste sugerido para tu preparación del ${originalEntry.fecha}: "${feedback}"`
-          : `Receta calibrada por IA. Ajuste sugerido basado en tu preparación del ${originalEntry.fecha}: "${feedback}"`
+          : `Receta calibrada por ${provider.toUpperCase()}. Ajuste sugerido basado en tu preparación del ${originalEntry.fecha}: "${feedback}"`,
+        isFallback,
+        isIA: !isFallback,
+        recetaBaseOrigen: recetaBase ? `${recetaBase.competencia} ${recetaBase.year}` : "Base de datos Gato Brew",
+        recetaBaseBarista: recetaBase?.barista,
+        variacionAplicada: true,
+        pasosCronometro: []
       };
 
       setActiveRecipe(newRecipe);
