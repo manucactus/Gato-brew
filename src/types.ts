@@ -6,6 +6,14 @@ export interface PasoCronometro {
   aguaAcumulada: number; // cumulative water poured in grams
 }
 
+export interface MoliendaDetalle {
+  tipo: "extra-gruesa" | "gruesa" | "media-gruesa" | "media" | "media-fina" | "fina" | "extra-fina" | "polvo";
+  granulometria: string; // e.g., "350-450 μm"
+  clicsComandante: string; // e.g., "20-24"
+  clicsEquivalent: string; // range for equivalent setting
+  descripcion: string; // e.g., "Similar a sal de mar"
+}
+
 export interface RecetaCafe {
   id: string;
   origen: string;
@@ -14,41 +22,49 @@ export interface RecetaCafe {
   metodo: string;
   molino: string;
   temperatura: string;
+  temperaturaNum: number; // temperatura numérica para cálculos
   molienda: string;
+  moliendaDetalle?: MoliendaDetalle;
   ratio: string;
+  ratioNum: number; // ratio numérico para cálculos
   cafeGramos: number;
   aguaGramos: number;
   tiempoExtraccion: string;
+  tiempoExtraccionSegundos: number; // tiempo en segundos para cálculos
   saborPerfil: string;
   instrucciones: string[];
   pasosCronometro: PasoCronometro[];
   notasBarista: string;
-  notasPersonales?: string; // Personal notes edited by the user
+  notasPersonales?: string;
   fecha: string;
   isFallback?: boolean;
-  originalCataId?: string; // Link to the original cata from which this was calibrated
+  isIA?: boolean; // Indica si fue generada por IA
+  originalCataId?: string;
+  // Metadatos de la receta base (de dónde vino)
+  recetaBaseOrigen?: string; // ej: "WBrC 2023"
+  recetaBaseBarista?: string;
+  variacionAplicada?: boolean;
 }
 
 export interface RegistroCata {
   id: string;
   recetaId: string;
   fecha: string;
-  puntuacion: number; // 1-5 stars
-  acidez: number; // 1-5 scale
-  cuerpo: number; // 1-5 scale
-  dulzor: number; // 1-5 scale
-  amargor: number; // 1-5 scale
-  balance: number; // 1-5 scale
-  saborNotas: string; // e.g., "Notas cítricas, florales, chocolate"
-  ajustesFuturos: string; // adjustments for next time
-  // Cached for display in history without fetching full recipe
+  puntuacion: number;
+  acidez: number;
+  cuerpo: number;
+  dulzor: number;
+  amargor: number;
+  balance: number;
+  saborNotas: string;
+  ajustesFuturos: string;
   origenCafe: string;
   metodoCafe: string;
   moliendaCafe: string;
   procesoCafe?: string;
   variedadCafe?: string;
-  titulo?: string; // Custom preparation title entered by the user
-  modificadaPorIA?: boolean; // Flag to show if it has been optimized/calibrated by IA
-  recetaCalibrada?: RecetaCafe; // Store the resulting calibrated recipe
-  originalCataId?: string; // If this cata is a child of another cata
+  titulo?: string;
+  modificadaPorIA?: boolean;
+  recetaCalibrada?: RecetaCafe;
+  originalCataId?: string;
 }
