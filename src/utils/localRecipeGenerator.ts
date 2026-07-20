@@ -110,7 +110,6 @@ function generarPerfilSabor(
 
   // Perfiles por variedad
   const perfilesVariedad: Record<string, string[]> = {
-    "geisha": ["Jazmín", "Bergamota", "Floral", "Delicado", " té negro", "Melocotón"],
     "geisha": ["Jazmín", "Bergamota", "Floral", "Delicado", "Té negro", "Melocotón"],
     "bourbon": ["Chocolate", "Caramelo", "Frutos rojos", "Dulzor", "Balanceado", "Clásico"],
     "pink bourbon": ["Frutos rojos", "Floral", "Cítrico", "Complex", "Winey", "Delicado"],
